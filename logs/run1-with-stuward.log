@@ -1,7 +1,7 @@
-# Run 1: real STUWard 1.3.15 + Jotunn 2.30.1 + Jotunn AssetManager Conflict Repro 1.0.0 (the pre-rename name of Asset Manager Crash (MRE)), SimulateStuWardPatch=false
-# Trimmed from BepInEx LogOutput.log. Lines marked [...] were omitted (Unity/Valheim startup noise, save-file listing,
-# Steam identity). The Windows username in the profile path was replaced with <user>. Everything else is verbatim.
-# Note: this log was produced by MRE 1.0.0, before the rename and before the IL diagnostic lines (MRE 1.1.0) existed.
+# Run 1: real STUWard 1.3.15 + Jotunn 2.30.1 + Asset Manager Crash (MRE) 1.1.0, SimulateStuWardPatch=false
+# Valheim 1.0.15, BepInExPack_Valheim 5.4.2350 (BepInEx 5.4.23.5), profile with only those four mods.
+# Trimmed from BepInEx LogOutput.log. Lines marked [...] were omitted (localization loading, Steam identity, save-file
+# listing, world loading, player/character names). Everything else is verbatim.
 
 [Message:   BepInEx] BepInEx 5.4.23.5 - valheim (9/9/2026 7:10:01 PM)
 [Message:   BepInEx] User is running BepInExPack Valheim version 5.4.2350 from Thunderstore
@@ -14,7 +14,6 @@
 [Info   :   BepInEx] 1 patcher plugin loaded
 [Info   :   BepInEx] Patching [UnityEngine.CoreModule] with [BepInEx.Chainloader]
 [Message:   BepInEx] Preloader finished
-[Message:   BepInEx] Valheim Version: 1.0.15
 [Message:   BepInEx] Chainloader ready
 [Message:   BepInEx] Chainloader started
 [Info   :   BepInEx] 3 plugins to load
@@ -22,29 +21,38 @@
 [Info   :Jotunn.Main] Initializing ModCompatibility
 [Info   :Jotunn.Main] Initializing SynchronizationManager
 [Info   :Jotunn.Main] Initializing NetworkManager
-[Info   :   BepInEx] Loading [Jotunn AssetManager Conflict Repro 1.0.0]
-[Info   :Jotunn AssetManager Conflict Repro] SimulateStuWardPatch=false: no simulated patch applied (relying on other installed mods).
+[Info   :   BepInEx] Loading [Asset Manager Crash (MRE) 1.1.0]
+[Info   :Asset Manager Crash (MRE)] SimulateStuWardPatch=false: no simulated patch applied (relying on other installed mods).
 [Info   :   BepInEx] Loading [STUWard 1.3.15]
 [Info   :   STUWard] Loaded STUWard localizations: English=47, Korean=47
+
+[...]
+
 [Info   :   STUWard] Applied STUWard localization for language 'English' with 47 entries.
 [Info   :   STUWard] Applied item prefab policy: blocked_item_prefabs=5, pickup_whitelist=1, pickup_blacklist=0
 [Message:   BepInEx] Chainloader startup complete
 
 [...]
 
-[Info   :   STUWard] Created managed ward config file 'C:\Users\<user>\AppData\Roaming\Thunderstore Mod Manager\DataFolder\Valheim\profiles\Minimal Working Test\BepInEx\config\STUWard\STUWard.yml'.
+[Info   : Unity Log] 09/19/2026 10:54:40: Valheim version: 1.0.15 (network version 40)
+
+[...]
+
 [Info   :   STUWard] Applied item prefab policy: blocked_item_prefabs=5, pickup_whitelist=1, pickup_blacklist=0
 [Info   : Unity Log] Registered 'sighsorry.STUWard ConfigSync' RPC - waiting for incoming connections
 [Info   :   STUWard] Registered STUWard prefab without Jotunn.
+
+[...]
+
 [Info   :Jotunn.Managers.NetworkManager] Registering 2 custom RPCs
 
 [...]
 
-[Info   : Unity Log] 09/19/2026 10:08:55: Spawned after 8.019993
+[Info   : Unity Log] 09/19/2026 10:55:44: Spawned after 8.019993
 
 [...]
 
-[Info   : Unity Log] 09/19/2026 10:08:55: Skipping unloading unused assets
+[Info   : Unity Log] 09/19/2026 10:55:44: Skipping unloading unused assets
 
 [Info   :Jotunn.Main] Initializing GUIManager
 [Info   :Jotunn.Main] Initializing AssetManager
@@ -85,7 +93,7 @@ Parameter name: index
   at MonoMod.Cil.ILContext.Invoke (MonoMod.Cil.ILContext+Manipulator manip) [0x00087] in <6733e342b5b549bba815373898724469>:0
   at MonoMod.RuntimeDetour.ILHook+Context.InvokeManipulator (Mono.Cecil.MethodDefinition def, MonoMod.Cil.ILContext+Manipulator cb) [0x00012] in <4e2760c7517c4ea79c633d67e84b319f>:0
   at (wrapper dynamic-method) MonoMod.RuntimeDetour.ILHook+Context.DMD<MonoMod.RuntimeDetour.ILHook+Context::Refresh>(MonoMod.RuntimeDetour.ILHook/Context)
-  at (wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MonoMod.RuntimeDetour.ILHook+Context::Refresh>?125697738(object)
+  at (wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MonoMod.RuntimeDetour.ILHook+Context::Refresh>?-1482215734(object)
   at HarmonyLib.Internal.RuntimeFixes.StackTraceFixes.OnILChainRefresh (System.Object self) [0x00000] in <474744d65d8e460fa08cd5fd82b5d65f>:0
   at MonoMod.RuntimeDetour.ILHook.Apply () [0x00059] in <4e2760c7517c4ea79c633d67e84b319f>:0
   at HarmonyLib.Public.Patching.ManagedMethodPatcher.DetourTo (System.Reflection.MethodBase replacement) [0x00047] in <474744d65d8e460fa08cd5fd82b5d65f>:0
@@ -102,7 +110,11 @@ Parameter name: index
   at Jotunn.Managers.PrefabManager+Cache.GetPrefab (System.Type type, System.String name) [0x00000] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\PrefabManager.cs:465
   at Jotunn.Managers.PrefabManager+Cache.GetPrefab[T] (System.String name) [0x00000] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\PrefabManager.cs:505
   at Jotunn.Managers.GUIManager.InitializeAssets () [0x00039] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\GUIManager.cs:385
-[Error  :Jotunn AssetManager Conflict Repro] REPRODUCED: GUIManager.GetSprite threw TypeInitializationException: The type initializer for 'Jotunn.Managers.AssetManager' threw an exception.
-[Error  :Jotunn AssetManager Conflict Repro] Root cause: ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+[Error  :Asset Manager Crash (MRE)] REPRODUCED: GUIManager.GetSprite threw TypeInitializationException: The type initializer for 'Jotunn.Managers.AssetManager' threw an exception.
+[Error  :Asset Manager Crash (MRE)] Root cause: ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
 Parameter name: index
-[Info   :Jotunn AssetManager Conflict Repro] Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: sighsorry.STUWard [STUWard.WardUiResources+AssetPathsPatch.Transpiler], com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID]
+[Info   :Asset Manager Crash (MRE)] Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: sighsorry.STUWard [STUWard.WardUiResources+AssetPathsPatch.Transpiler] (priority 400), com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID] (priority 400)
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: vanilla AssetBundleLoader.GetAllAssetPathsMappedToAssetID has 30 instructions, 1 call(s) to System.Collections.Generic.Dictionary`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[SoftReferenceableAssets.AssetID, SoftReferenceableAssets, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]].Add.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 1/2 (sighsorry.STUWard): applied OK; 0 call(s) to Dictionary.Add remain; callees introduced so far: STUWard.WardUiResources+AssetPathsPatch.AddPath.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): Jotunn's MatchForward(Calls Dictionary.Add) over its input IL -> IsValid=False, Pos=30, Length=30, Add calls in input=0.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): applying it threw ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection. Parameter name: index

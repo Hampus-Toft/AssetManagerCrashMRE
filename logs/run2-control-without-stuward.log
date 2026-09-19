@@ -1,11 +1,45 @@
-# Run 2 (control): Jotunn 2.30.1 + Jotunn AssetManager Conflict Repro 1.0.0 (the pre-rename name of Asset Manager Crash (MRE)), NO STUWard, SimulateStuWardPatch=false
-# Excerpt of the BepInEx LogOutput.log from "Initializing GUIManager" onward. Unrelated Unity/Valheim lines and one line
-# containing Steam identity data were omitted ([...]). Everything else is verbatim.
-# Note: this log was produced by MRE 1.0.0, before the rename and before the IL diagnostic lines (MRE 1.1.0) existed.
+# Run 2 (control): Jotunn 2.30.1 + Asset Manager Crash (MRE) 1.1.0, NO STUWard, SimulateStuWardPatch=false
+# Valheim 1.0.15, BepInExPack_Valheim 5.4.2350 (BepInEx 5.4.23.5), profile with only those three mods.
+# Trimmed from BepInEx LogOutput.log. Lines marked [...] were omitted (localization loading, Steam identity, save-file
+# listing, world loading, player/character names). Everything else is verbatim.
+
+[Message:   BepInEx] BepInEx 5.4.23.5 - valheim (9/9/2026 7:10:01 PM)
+[Message:   BepInEx] User is running BepInExPack Valheim version 5.4.2350 from Thunderstore
+[Info   :   BepInEx] Running under Unity v6000.0.75.2503836
+[Info   :   BepInEx] CLR runtime version: 4.0.30319.42000
+[Info   :   BepInEx] Supports SRE: True
+[Info   :   BepInEx] System platform: Bits64, Windows
+[Message:   BepInEx] Preloader started
+[Info   :   BepInEx] Loaded 1 patcher method from [BepInEx.Preloader 5.4.23.5]
+[Info   :   BepInEx] 1 patcher plugin loaded
+[Info   :   BepInEx] Patching [UnityEngine.CoreModule] with [BepInEx.Chainloader]
+[Message:   BepInEx] Preloader finished
+[Message:   BepInEx] Chainloader ready
+[Message:   BepInEx] Chainloader started
+[Info   :   BepInEx] 2 plugins to load
+[Info   :   BepInEx] Loading [Jotunn 2.30.1]
+[Info   :Jotunn.Main] Initializing ModCompatibility
+[Info   :Jotunn.Main] Initializing SynchronizationManager
+[Info   :Jotunn.Main] Initializing NetworkManager
+[Info   :   BepInEx] Loading [Asset Manager Crash (MRE) 1.1.0]
+[Info   :Asset Manager Crash (MRE)] SimulateStuWardPatch=false: no simulated patch applied (relying on other installed mods).
+[Message:   BepInEx] Chainloader startup complete
 
 [...]
 
-[Info   : Unity Log] 09/19/2026 10:13:12: Skipping unloading unused assets
+[Info   : Unity Log] 09/19/2026 10:57:15: Valheim version: 1.0.15 (network version 40)
+
+[...]
+
+[Info   :Jotunn.Managers.NetworkManager] Registering 2 custom RPCs
+
+[...]
+
+[Info   : Unity Log] 09/19/2026 10:57:42: Spawned after 8.019993
+
+[...]
+
+[Info   : Unity Log] 09/19/2026 10:57:42: Skipping unloading unused assets
 
 [Info   :Jotunn.Main] Initializing GUIManager
 [Info   :Jotunn.Main] Initializing AssetManager
@@ -18,5 +52,8 @@
 [Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/caverock_floorsmall.prefab, new: Assets/world/Props/Caverocks/caverock_floorsmall.prefab, using old path
 [Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/Rocks/highstone.prefab, new: Assets/world/Props/DeepNorth/HotSpring/highstone.prefab, using old path
 [Info   :Jotunn.Main] Initializing PrefabManager
-[Info   :Jotunn AssetManager Conflict Repro] NOT REPRODUCED: GUIManager.GetSprite returned 'button(Clone)'; Jotunn's AssetManager initialised.
-[Info   :Jotunn AssetManager Conflict Repro] Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID]
+[Info   :Asset Manager Crash (MRE)] NOT REPRODUCED: GUIManager.GetSprite returned 'button(Clone)'; Jotunn's AssetManager initialised.
+[Info   :Asset Manager Crash (MRE)] Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID] (priority 400)
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: vanilla AssetBundleLoader.GetAllAssetPathsMappedToAssetID has 30 instructions, 1 call(s) to System.Collections.Generic.Dictionary`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[SoftReferenceableAssets.AssetID, SoftReferenceableAssets, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]].Add.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 1/1 (com.jotunn.jotunn): Jotunn's MatchForward(Calls Dictionary.Add) over its input IL -> IsValid=True, Pos=17, Length=30, Add calls in input=1.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 1/1 (com.jotunn.jotunn): applied OK; 0 call(s) to Dictionary.Add remain; callees introduced so far: Jotunn.Managers.AssetManager+Patches.AddSafe.

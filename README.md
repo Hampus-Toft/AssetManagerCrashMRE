@@ -5,7 +5,8 @@
 
 ```
 [Error  :  HarmonyX] Failed to patch ... SoftReferenceableAssets.AssetBundleLoader::GetAllAssetPathsMappedToAssetID():
-  System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+  System.Reflection.TargetInvocationException ---> System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+  at HarmonyLib.CodeMatcher.SetInstruction (...)
   at Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID (...) AssetManager.cs:98
 ```
 
@@ -21,18 +22,36 @@ Two mods rewrite the same IL in the same vanilla method:
 
 | Mod | Patch | Behaviour |
 | --- | --- | --- |
-| Jotunn 2.30.0 | `AssetManager.Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID` (transpiler) | `CodeMatcher.MatchForward(Calls Dictionary<string,AssetID>.Add).SetInstruction(AddSafe)`. **No check that the match succeeded.** Applied lazily, the first time `AssetManager` is touched. |
-| STUWard >= 1.3.11 (decompiled from 1.3.15) | `WardUiResources.AssetPathsPatch` (transpiler) | Same rewrite: every call to `Dictionary<string,AssetID>.Add` becomes a safe-add. Tolerant of finding nothing. Applied eagerly in `Plugin.Awake()`. |
+| Jotunn 2.30.0 / 2.30.1 | [`AssetManager.Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID`](https://github.com/Valheim-Modding/Jotunn/blob/2d4d875ce16c21ad8c99e99864d42e2c4821886b/JotunnLib/Managers/AssetManager.cs#L92-L102) (transpiler) | `CodeMatcher.MatchForward(Calls Dictionary<string,AssetID>.Add).SetInstruction(AddSafe)`. **No check that the match succeeded.** Applied lazily, the first time `AssetManager` is touched. |
+| STUWard >= 1.3.11 (checked against 1.3.15) | [`WardUiResources.AssetPathsPatch`](https://github.com/sighsorry1029/STUWard/blob/e3aac84cf824cd765928d1e525e8e5adc9b8430d/WardUiResources.cs#L320-L344) (transpiler) | Same rewrite: every call to `Dictionary<string,AssetID>.Add` becomes a safe-add. Tolerant of finding nothing. Applied eagerly in `Plugin.Awake()`. |
 
-STUWard runs first, so by the time Jotunn's transpiler runs the `Add` call is gone. `MatchForward` leaves
-`CodeMatcher.Pos == -1`, and `SetInstruction` throws `ArgumentOutOfRangeException`. Jotunn's `AssetManager` static
+STUWard runs first, so by the time Jotunn's transpiler runs the `Add` call is gone. `MatchForward` finds nothing and
+leaves the `CodeMatcher` past the end of the instruction list (`IsValid=False`, `Pos == Length`, 30 of 30 in the game
+logs), and `SetInstruction` then throws `ArgumentOutOfRangeException`. Both transpilers have the default Harmony
+priority (400), so the order is just registration order: STUWard registers in `Awake`, Jotunn only when `AssetManager`
+is first touched. Jotunn's `AssetManager` static
 constructor is then permanently broken, so every later `GUIManager.GetSprite()` / prefab registration through Jotunn
 rethrows. If Jotunn's patch happened to be applied first, STUWard's tolerant transpiler would just find nothing to do
 and there would be no error. The failure is order-dependent.
 
 STUWard 1.3.11's changelog: "Removed STUWard's Jotunn runtime dependency ... native asset lookup ... now use a focused
 implementation inside STUWard". Its 1.3.15 manifest no longer lists Jotunn, but Jotunn is still commonly installed
-alongside it. STUWard's public GitHub repo is still at 1.3.10, before this change.
+alongside it. STUWard's public GitHub repo (`sighsorry1029/STUWard`) is at 1.3.15 and contains the patch; a comment in
+it says "Preserve the first mapping, as the former Jotunn asset lookup did", so it deliberately copies Jotunn's
+`AddSafe` behaviour. Jotunn's `AddSafe` (`key != null && !ContainsKey(key)`) and STUWard's `AddPath` are equivalent, so
+either transpiler alone gives the same result. The conflict is only about who rewrites the call first.
+
+## Tested versions
+
+| Component | Version used for the repro | Version in the upstream issues |
+| --- | --- | --- |
+| Valheim | 1.0.15 | 1.0.12 (n-40) |
+| BepInExPack_Valheim | 5.4.2350 (BepInEx 5.4.23.5) | 5.4.2350 |
+| Jotunn | 2.30.1 | 2.30.0 |
+| STUWard | 1.3.15 | 1.3.15 |
+
+The failing line in Jotunn's transpiler is `AssetManager.cs:98` in both the 2.30.0 traces in the issues and the 2.30.1
+trace in `logs/`, so this is the same code, and the current Jotunn master still has no validity check on the match.
 
 ## What the plugin does
 
@@ -40,15 +59,16 @@ alongside it. STUWard's public GitHub repo is still at 1.3.10, before this chang
   (same target, same rewrite, same timing). If `false`, it patches nothing.
 - `Update`: once you are in-game (`Player.m_localPlayer != null`), calls `GUIManager.Instance.GetSprite("button")`, the
   same call that triggers `GUIManager.InitializeAssets -> PrefabManager.Cache.GetPrefab -> AssetManager..cctor` in the
-  real crash. It then logs the verdict (`REPRODUCED` / `NOT REPRODUCED`) and lists the Harmony owners of transpilers on
-  the target method.
+  real crash. It then logs the verdict (`REPRODUCED` / `NOT REPRODUCED`), lists the Harmony owners of transpilers on
+  the target method, and replays the transpiler chain one step at a time (`IL diagnostic:` lines), showing how many
+  `Dictionary.Add` calls each step leaves and whether Jotunn's `MatchForward` is valid over the IL it receives.
 
 The plugin has a hard dependency on Jotunn, so Jotunn must be installed in every run below.
 
 ## Usage
 
 All three runs use a BepInEx profile (r2modman / Thunderstore Mod Manager, or a manual BepInEx install) containing
-**BepInExPack_Valheim**, **Jotunn 2.30.0** and **this plugin**. They differ only in whether STUWard is installed and in
+**BepInExPack_Valheim**, **Jotunn 2.30.1** and **this plugin**. They differ only in whether STUWard is installed and in
 the `SimulateStuWardPatch` option.
 
 The option lives in `BepInEx/config/dev.hampus.asset-manager-crash-mre.cfg` (section `[Repro]`). The file is created the
@@ -70,24 +90,30 @@ vary. **Load into a world** for each run: the verdict is only logged once the lo
 
 Shows the bug with the real mods, no simulation.
 
-1. Profile: Jotunn 2.30.0 + this plugin + **STUWard 1.3.11 or newer** (reported on 1.3.12).
+1. Profile: Jotunn 2.30.1 + this plugin + **STUWard 1.3.11 or newer** (reproduced with 1.3.15; first seen on 1.3.12).
 2. Leave `SimulateStuWardPatch = false` (the default). Do not enable it here: STUWard already provides the patch.
 3. Start the game and load into a world.
 
-Expect, in this order:
+Expect, in this order (trimmed; full excerpt in [`logs/run1-with-stuward.log`](logs/run1-with-stuward.log)):
 
 ```
 SimulateStuWardPatch=false: no simulated patch applied (relying on other installed mods).
 ... (STUWard's Awake has already rewritten the Dictionary.Add call) ...
-[Error  :  HarmonyX] Failed to patch ... AssetBundleLoader::GetAllAssetPathsMappedToAssetID(): System.ArgumentOutOfRangeException ...
-REPRODUCED: GUIManager.GetSprite threw <TypeInitializationException or ArgumentOutOfRangeException>: ...
+[Error  :  HarmonyX] Failed to patch ... AssetBundleLoader::GetAllAssetPathsMappedToAssetID(): System.Reflection.TargetInvocationException: ... ---> System.ArgumentOutOfRangeException: Index was out of range. ...
+REPRODUCED: GUIManager.GetSprite threw TypeInitializationException: The type initializer for 'Jotunn.Managers.AssetManager' threw an exception.
 Root cause: ArgumentOutOfRangeException: Index was out of range. ...
-Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: sighsorry.STUWard [...], <Jotunn's Harmony id> [...]
+Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: sighsorry.STUWard [STUWard.WardUiResources+AssetPathsPatch.Transpiler] (priority 400), com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID] (priority 400)
+IL diagnostic: vanilla AssetBundleLoader.GetAllAssetPathsMappedToAssetID has 30 instructions, 1 call(s) to ...Dictionary...Add.
+IL diagnostic: transpiler 1/2 (sighsorry.STUWard): applied OK; 0 call(s) to Dictionary.Add remain; callees introduced so far: STUWard.WardUiResources+AssetPathsPatch.AddPath.
+IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): Jotunn's MatchForward(Calls Dictionary.Add) over its input IL -> IsValid=False, Pos=30, Length=30, Add calls in input=0.
+IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): applying it threw ArgumentOutOfRangeException: Index was out of range. ...
 ```
 
 - The HarmonyX `Failed to patch` error is the crash itself. It appears when Jotunn's `AssetManager` is first touched,
   which can be before this plugin's own `Update` runs.
 - Both `sighsorry.STUWard` and Jotunn's Harmony id show up as transpiler owners: that is the conflict.
+- The IL diagnostic lines show why: STUWard's step removes the only `Add` call, so Jotunn's `MatchForward` has nothing
+  to match (`IsValid=False`, 0 `Add` calls in its input).
 - Jotunn stays broken until you restart the game. Other Jotunn-based features (custom GUI sprites, prefab
   registration) will also fail.
 
@@ -95,20 +121,26 @@ Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMa
 
 Confirms the plugin and Jotunn are fine on their own and that the crash needs the second patch.
 
-1. Profile: Jotunn 2.30.0 + this plugin only. **No STUWard.**
+1. Profile: Jotunn 2.30.1 + this plugin only. **No STUWard.**
 2. Leave `SimulateStuWardPatch = false`.
 3. Start the game and load into a world.
 
-Expect:
+Expect (trimmed; full excerpt in [`logs/run2-control-without-stuward.log`](logs/run2-control-without-stuward.log)):
 
 ```
 SimulateStuWardPatch=false: no simulated patch applied (relying on other installed mods).
-NOT REPRODUCED: GUIManager.GetSprite returned 'button'; Jotunn's AssetManager initialised.
-Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: <Jotunn's Harmony id> [...]
+NOT REPRODUCED: GUIManager.GetSprite returned 'button(Clone)'; Jotunn's AssetManager initialised.
+Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID] (priority 400)
+IL diagnostic: vanilla AssetBundleLoader.GetAllAssetPathsMappedToAssetID has 30 instructions, 1 call(s) to ...Dictionary...Add.
+IL diagnostic: transpiler 1/1 (com.jotunn.jotunn): Jotunn's MatchForward(Calls Dictionary.Add) over its input IL -> IsValid=True, Pos=17, Length=30, Add calls in input=1.
+IL diagnostic: transpiler 1/1 (com.jotunn.jotunn): applied OK; 0 call(s) to Dictionary.Add remain; callees introduced so far: Jotunn.Managers.AssetManager+Patches.AddSafe.
 ```
 
 - No HarmonyX `Failed to patch` error, no `TypeInitializationException`.
-- Jotunn is the only transpiler owner.
+- Jotunn is the only transpiler owner, and its `MatchForward` finds the `Add` call (`IsValid=True`, 1 `Add` call in its
+  input), unlike run 1.
+- Jotunn logs a few `Ambiguous asset name for path ... using old path` warnings while initialising `AssetManager`.
+  They also appear in this control and are not errors.
 - If this run crashes, something else in the profile is rewriting the same method, and the transpiler-owner line names
   it. Remove the other mods and retry.
 
@@ -118,22 +150,27 @@ Reproduces the crash without STUWard, for anyone who wants to debug or test a fi
 applies its own copy of STUWard's `AssetPathsPatch` in `Awake`, which matches STUWard's timing (before Jotunn's lazy
 patch).
 
-1. Profile: Jotunn 2.30.0 + this plugin only. **No STUWard.**
+1. Profile: Jotunn 2.30.1 + this plugin only. **No STUWard.**
 2. Set `SimulateStuWardPatch = true` and restart the game.
 3. Load into a world.
 
-Expect:
+Expect (trimmed; full excerpt in [`logs/run3-standalone-simulated.log`](logs/run3-standalone-simulated.log)):
 
 ```
 SimulateStuWardPatch=true: applied simulated STUWard AssetPathsPatch.
-[Error  :  HarmonyX] Failed to patch ... AssetBundleLoader::GetAllAssetPathsMappedToAssetID(): System.ArgumentOutOfRangeException ...
-REPRODUCED: GUIManager.GetSprite threw <TypeInitializationException or ArgumentOutOfRangeException>: ...
+[Error  :  HarmonyX] Failed to patch ... AssetBundleLoader::GetAllAssetPathsMappedToAssetID(): System.Reflection.TargetInvocationException: ... ---> System.ArgumentOutOfRangeException: Index was out of range. ...
+REPRODUCED: GUIManager.GetSprite threw TypeInitializationException: The type initializer for 'Jotunn.Managers.AssetManager' threw an exception.
 Root cause: ArgumentOutOfRangeException: Index was out of range. ...
-Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: dev.hampus.asset-manager-crash-mre.simulated-stuward [...], <Jotunn's Harmony id> [...]
+Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: dev.hampus.asset-manager-crash-mre.simulated-stuward [AssetManagerCrashMRE.AssetManagerCrashMrePlugin+SimulatedStuWardAssetPathsPatch.Transpiler] (priority 400), com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID] (priority 400)
+IL diagnostic: vanilla AssetBundleLoader.GetAllAssetPathsMappedToAssetID has 30 instructions, 1 call(s) to ...Dictionary...Add.
+IL diagnostic: transpiler 1/2 (dev.hampus.asset-manager-crash-mre.simulated-stuward): applied OK; 0 call(s) to Dictionary.Add remain; callees introduced so far: ...SimulatedStuWardAssetPathsPatch.AddPath.
+IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): Jotunn's MatchForward(Calls Dictionary.Add) over its input IL -> IsValid=False, Pos=30, Length=30, Add calls in input=0.
+IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): applying it threw ArgumentOutOfRangeException: Index was out of range. ...
 ```
 
-- Same failure as run 1. The only difference is that the first transpiler owner is
-  `dev.hampus.asset-manager-crash-mre.simulated-stuward` instead of `sighsorry.STUWard`.
+- Same failure as run 1, down to the IL diagnostic numbers (`IsValid=False, Pos=30, Length=30, Add calls in input=0`).
+  The only difference is that the first transpiler owner is `dev.hampus.asset-manager-crash-mre.simulated-stuward`
+  instead of `sighsorry.STUWard`.
 - Don't enable this together with real STUWard; there is nothing to gain and it muddies the owner list.
 
 ### Reading the verdict
@@ -142,7 +179,27 @@ Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMa
 | --- | --- |
 | `NOT REPRODUCED: ... Jotunn's AssetManager initialised.` | Jotunn's transpiler applied cleanly. |
 | `REPRODUCED: ...` + `Root cause: ArgumentOutOfRangeException` | Jotunn's transpiler found no `Dictionary<string,AssetID>.Add` call because another patch had already rewritten it. |
+| `IL diagnostic: ... IsValid=True, ... Add calls in input=1` | Jotunn's `MatchForward` found the `Add` call in the IL it was handed (control run). |
+| `IL diagnostic: ... IsValid=False, ... Add calls in input=0` | Another transpiler ran first and removed the `Add` call, so Jotunn's match is invalid and `SetInstruction` throws. |
 | Neither line appears | You never loaded into a world (the check waits for `Player.m_localPlayer`), or the plugin isn't loading (check Jotunn is installed and the plugin is in `BepInEx/plugins`). |
+
+## Game-free proof of the ordering
+
+`HarmonyOrderProof/` is a small console app (HarmonyX 2.16.1 from NuGet, no Valheim install needed) that shows the
+order dependence outside the game. It patches a stand-in method with one `Dictionary.Add` call using a STUWard-shaped and
+a Jotunn-shaped transpiler, in both orders. Run `dotnet run -c Release` in that folder; the captured output is in
+`logs/harmony-order-proof-output.txt`.
+
+| Scenario | Result |
+| --- | --- |
+| A: Jotunn only (control) | Patch applies; safe add active. |
+| B: STUWard first, then Jotunn (as in the game) | Jotunn's patch fails: `MatchForward` gives `IsValid=False` with 0 `Add` calls in its input. |
+| C: Jotunn first, then STUWard | Both apply; STUWard's transpiler finds nothing to rewrite. No error. |
+
+The exception type differs between the two setups: this console app throws `InvalidOperationException` ("Cannot set
+instruction/opcode at invalid position") from the NuGet HarmonyX, while the game's bundled HarmonyX throws
+`ArgumentOutOfRangeException` from the same `CodeMatcher.SetInstruction` call. Same cause (an invalid matcher position),
+different exception in different HarmonyX builds.
 
 ## Build
 
@@ -150,7 +207,7 @@ Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMa
 dotnet build -c Release
 ```
 
-Needs a Valheim install with Jotunn 2.30.0 at `BepInEx\plugins\Jotunn\Jotunn.dll`. Override with
+Needs a Valheim install with Jotunn 2.30.0 or newer (2.30.1 tested) at `BepInEx\plugins\Jotunn\Jotunn.dll`. Override with
 `VALHEIM_INSTALL_DIR` / `-p:ValheimInstallDir=...` / `-p:JotunnDllPath=...`. Add `-p:DeployToGame=true` to copy the
 DLL into `BepInEx\plugins` (it never launches or kills the game).
 
@@ -177,5 +234,6 @@ version in step with the plugin's `[BepInPlugin]` attribute.
 
 Found while debugging a ValheimRadar crash on a 14-mod Thunderstore profile (STUWard 1.3.12, Jotunn 2.30.0,
 Valheim 1.0.12). The investigation and this MRE were produced with Claude (Claude Code, Anthropic) working from the
-user's BepInEx logs, Jotunn's v2.30.0 source, and the decompiled STUWard DLL. The ordering behaviour was also
-confirmed outside the game with the game's own Harmony (`BepInEx/core/0Harmony.dll`) against a dummy method.
+user's BepInEx logs, Jotunn's v2.30.0 source, and the decompiled STUWard DLL (later checked against STUWard's public
+source at 1.3.15). The ordering behaviour was also confirmed outside the game against a dummy method, see
+[Game-free proof of the ordering](#game-free-proof-of-the-ordering).
