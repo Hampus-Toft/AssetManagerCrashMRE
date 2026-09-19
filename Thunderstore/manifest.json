@@ -1,0 +1,10 @@
+{
+  "name": "AssetManagerCrashMRE",
+  "version_number": "1.1.0",
+  "website_url": "",
+  "description": "Asset Manager Crash (MRE): minimal reproducible example where Jotunn's AssetManager transpiler throws when another mod (e.g. STUWard 1.3.11+) already rewrote the same vanilla method.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350",
+    "ValheimModding-Jotunn-2.30.1"
+  ]
+}

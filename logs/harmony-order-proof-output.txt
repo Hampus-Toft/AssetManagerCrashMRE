@@ -1,0 +1,22 @@
+=== A: Jotunn only (control) ===
+  patch by com.jotunn.jotunn: OK
+  Target.Build with duplicate keys returned 2 entries (safe add active)
+  vanilla: 26 instructions, 1 call(s) to Dictionary`2.Add
+  transpiler 1/1 (com.jotunn.jotunn): Jotunn MatchForward over its input -> IsValid=True, Pos=14, Length=26, Add calls in input=1
+  transpiler 1/1 (com.jotunn.jotunn): applied OK; 0 Add call(s) remain; introduced: JotunnLike.AddSafe
+=== B: STUWard first, then Jotunn (as in the game) ===
+  patch by sighsorry.STUWard: OK
+  patch by com.jotunn.jotunn: FAILED (InvalidOperationException)
+  Target.Build with duplicate keys threw ArgumentException (safe add NOT active)
+  vanilla: 26 instructions, 1 call(s) to Dictionary`2.Add
+  transpiler 1/2 (sighsorry.STUWard): applied OK; 0 Add call(s) remain; introduced: StuWardLike.AddPath
+  transpiler 2/2 (com.jotunn.jotunn): Jotunn MatchForward over its input -> IsValid=False, Pos=26, Length=26, Add calls in input=0
+  transpiler 2/2 (com.jotunn.jotunn): applying it threw InvalidOperationException: Cannot set instruction/opcode at invalid position.
+=== C: Jotunn first, then STUWard ===
+  patch by com.jotunn.jotunn: OK
+  patch by sighsorry.STUWard: OK
+  Target.Build with duplicate keys returned 2 entries (safe add active)
+  vanilla: 26 instructions, 1 call(s) to Dictionary`2.Add
+  transpiler 1/2 (com.jotunn.jotunn): Jotunn MatchForward over its input -> IsValid=True, Pos=14, Length=26, Add calls in input=1
+  transpiler 1/2 (com.jotunn.jotunn): applied OK; 0 Add call(s) remain; introduced: JotunnLike.AddSafe
+  transpiler 2/2 (sighsorry.STUWard): applied OK; 0 Add call(s) remain; introduced: JotunnLike.AddSafe

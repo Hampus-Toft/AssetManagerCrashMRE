@@ -1,0 +1,70 @@
+# Run 3 (standalone): Jotunn 2.30.1 + Jotunn AssetManager Conflict Repro 1.0.0 (the pre-rename name of Asset Manager Crash (MRE)), NO STUWard, SimulateStuWardPatch=true
+# Excerpt of the BepInEx LogOutput.log from "Initializing GUIManager" onward (the start of the log, including the
+# "SimulateStuWardPatch=true: applied ..." line, was not captured in this excerpt; the simulated transpiler owner in the
+# last line confirms the patch was applied). Unrelated Unity/Valheim lines were omitted ([...]). Everything else is verbatim.
+# Note: this log was produced by MRE 1.0.0, before the rename and before the IL diagnostic lines (MRE 1.1.0) existed.
+
+[...]
+
+[Info   : Unity Log] 09/19/2026 10:21:57: Skipping unloading unused assets
+
+[Info   :Jotunn.Main] Initializing GUIManager
+[Info   :Jotunn.Main] Initializing AssetManager
+[Error  :  HarmonyX] Failed to patch virtual System.Collections.Generic.Dictionary<string, SoftReferenceableAssets.AssetID> SoftReferenceableAssets.AssetBundleLoader::GetAllAssetPathsMappedToAssetID(): System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index
+  at System.Collections.Generic.List`1[T].set_Item (System.Int32 index, T value) [0x00009] in <4449e9424e7e4d4d81a660907c68cb97>:0
+  at HarmonyLib.CodeMatcher.SetInstruction (HarmonyLib.CodeInstruction instruction) [0x0000c] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID (System.Collections.Generic.IEnumerable`1[T] instructions) [0x00039] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\AssetManager.cs:98
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <4449e9424e7e4d4d81a660907c68cb97>:0
+   --- End of inner exception stack trace ---
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00083] in <4449e9424e7e4d4d81a660907c68cb97>:0
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in <4449e9424e7e4d4d81a660907c68cb97>:0
+  at HarmonyLib.Internal.Patching.ILManipulator.ApplyTranspilers (System.Reflection.Emit.ILGenerator il, System.Reflection.MethodBase original, System.Func`2[T,TResult] getLocal, System.Func`1[TResult] defineLabel) [0x00093] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Internal.Patching.ILManipulator.WriteTo (Mono.Cecil.Cil.MethodBody body, System.Reflection.MethodBase original) [0x00066] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.HarmonyManipulator.WriteTranspilers () [0x00084] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.HarmonyManipulator.WriteImpl () [0x0002b] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+[Error  :Jotunn.Managers.GUIManager] System.TypeInitializationException: The type initializer for 'Jotunn.Managers.AssetManager' threw an exception. ---> HarmonyLib.HarmonyException: IL Compile Error (unknown location) ---> HarmonyLib.HarmonyException: IL Compile Error (unknown location) ---> HarmonyLib.HarmonyException: IL Compile Error (unknown location) ---> System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index
+  at System.Collections.Generic.List`1[T].set_Item (System.Int32 index, T value) [0x00009] in <4449e9424e7e4d4d81a660907c68cb97>:0
+  at HarmonyLib.CodeMatcher.SetInstruction (HarmonyLib.CodeInstruction instruction) [0x0000c] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID (System.Collections.Generic.IEnumerable`1[T] instructions) [0x00039] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\AssetManager.cs:98
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <4449e9424e7e4d4d81a660907c68cb97>:0
+   --- End of inner exception stack trace ---
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00083] in <4449e9424e7e4d4d81a660907c68cb97>:0
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in <4449e9424e7e4d4d81a660907c68cb97>:0
+  at HarmonyLib.Internal.Patching.ILManipulator.ApplyTranspilers (System.Reflection.Emit.ILGenerator il, System.Reflection.MethodBase original, System.Func`2[T,TResult] getLocal, System.Func`1[TResult] defineLabel) [0x00093] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Internal.Patching.ILManipulator.WriteTo (Mono.Cecil.Cil.MethodBody body, System.Reflection.MethodBase original) [0x00066] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.HarmonyManipulator.WriteTranspilers () [0x00084] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.HarmonyManipulator.WriteImpl () [0x0002b] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+   --- End of inner exception stack trace ---
+  at HarmonyLib.Public.Patching.HarmonyManipulator.WriteImpl () [0x00378] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.HarmonyManipulator.Process (MonoMod.Cil.ILContext ilContext, System.Reflection.MethodBase originalMethod) [0x00042] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.HarmonyManipulator.Manipulate (System.Reflection.MethodBase original, HarmonyLib.PatchInfo patchInfo, MonoMod.Cil.ILContext ctx) [0x00006] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.HarmonyManipulator.Manipulate (System.Reflection.MethodBase original, MonoMod.Cil.ILContext ctx) [0x00007] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Public.Patching.ManagedMethodPatcher.Manipulator (MonoMod.Cil.ILContext ctx) [0x00012] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at MonoMod.Cil.ILContext.Invoke (MonoMod.Cil.ILContext+Manipulator manip) [0x00087] in <6733e342b5b549bba815373898724469>:0
+  at MonoMod.RuntimeDetour.ILHook+Context.InvokeManipulator (Mono.Cecil.MethodDefinition def, MonoMod.Cil.ILContext+Manipulator cb) [0x00012] in <4e2760c7517c4ea79c633d67e84b319f>:0
+  at (wrapper dynamic-method) MonoMod.RuntimeDetour.ILHook+Context.DMD<MonoMod.RuntimeDetour.ILHook+Context::Refresh>(MonoMod.RuntimeDetour.ILHook/Context)
+  at (wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MonoMod.RuntimeDetour.ILHook+Context::Refresh>?-1543000374(object)
+  at HarmonyLib.Internal.RuntimeFixes.StackTraceFixes.OnILChainRefresh (System.Object self) [0x00000] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at MonoMod.RuntimeDetour.ILHook.Apply () [0x00059] in <4e2760c7517c4ea79c633d67e84b319f>:0
+  at HarmonyLib.Public.Patching.ManagedMethodPatcher.DetourTo (System.Reflection.MethodBase replacement) [0x00047] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+   --- End of inner exception stack trace ---
+  at HarmonyLib.Public.Patching.ManagedMethodPatcher.DetourTo (System.Reflection.MethodBase replacement) [0x0005f] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.PatchFunctions.UpdateWrapper (System.Reflection.MethodBase original, HarmonyLib.PatchInfo patchInfo) [0x00033] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+   --- End of inner exception stack trace ---
+  at HarmonyLib.PatchClassProcessor.ReportException (System.Exception exception, System.Reflection.MethodBase original) [0x00045] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.PatchClassProcessor.Patch () [0x00095] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at HarmonyLib.Harmony.PatchAll (System.Type type) [0x00008] in <474744d65d8e460fa08cd5fd82b5d65f>:0
+  at Jotunn.Managers.AssetManager.Jotunn.IManager.Init () [0x00040] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\AssetManager.cs:62
+  at Jotunn.Managers.AssetManager..cctor () [0x00000] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\AssetManager.cs:51
+   --- End of inner exception stack trace ---
+  at Jotunn.Managers.PrefabManager+Cache.GetPrefab (System.Type type, System.String name) [0x00000] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\PrefabManager.cs:465
+  at Jotunn.Managers.PrefabManager+Cache.GetPrefab[T] (System.String name) [0x00000] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\PrefabManager.cs:505
+  at Jotunn.Managers.GUIManager.InitializeAssets () [0x00039] in D:\coding\vs_workspace\Jotunn\JotunnLib\Managers\GUIManager.cs:385
+[Error  :Jotunn AssetManager Conflict Repro] REPRODUCED: GUIManager.GetSprite threw TypeInitializationException: The type initializer for 'Jotunn.Managers.AssetManager' threw an exception.
+[Error  :Jotunn AssetManager Conflict Repro] Root cause: ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index
+[Info   :Jotunn AssetManager Conflict Repro] Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: dev.hampus.jotunn-assetmanager-conflict-repro.simulated-stuward [JotunnAssetManagerConflictRepro.ReproPlugin+SimulatedStuWardAssetPathsPatch.Transpiler], com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID]

@@ -1,0 +1,22 @@
+# Run 2 (control): Jotunn 2.30.1 + Jotunn AssetManager Conflict Repro 1.0.0 (the pre-rename name of Asset Manager Crash (MRE)), NO STUWard, SimulateStuWardPatch=false
+# Excerpt of the BepInEx LogOutput.log from "Initializing GUIManager" onward. Unrelated Unity/Valheim lines and one line
+# containing Steam identity data were omitted ([...]). Everything else is verbatim.
+# Note: this log was produced by MRE 1.0.0, before the rename and before the IL diagnostic lines (MRE 1.1.0) existed.
+
+[...]
+
+[Info   : Unity Log] 09/19/2026 10:13:12: Skipping unloading unused assets
+
+[Info   :Jotunn.Main] Initializing GUIManager
+[Info   :Jotunn.Main] Initializing AssetManager
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/rock2_mountain.prefab, new: Assets/world/Props/Rocks/rock2_mountain.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/stone/Stone1_huge.prefab, new: Assets/world/Props/DeepNorth/HotSpring/Stone1_huge.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/caverock_stairs.prefab, new: Assets/world/Props/Caverocks/caverock_stairs.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/caverock_curvedrock.prefab, new: Assets/world/Props/Caverocks/caverock_curvedrock.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/Caverocks/caverock_pillar.prefab, new: Assets/world/Props/DeepNorth/HotSpring/caverock_pillar.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/widestone.prefab, new: Assets/world/Props/Rocks/widestone.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/caverock_floorsmall.prefab, new: Assets/world/Props/Caverocks/caverock_floorsmall.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/Rocks/highstone.prefab, new: Assets/world/Props/DeepNorth/HotSpring/highstone.prefab, using old path
+[Info   :Jotunn.Main] Initializing PrefabManager
+[Info   :Jotunn AssetManager Conflict Repro] NOT REPRODUCED: GUIManager.GetSprite returned 'button(Clone)'; Jotunn's AssetManager initialised.
+[Info   :Jotunn AssetManager Conflict Repro] Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID]
