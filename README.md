@@ -51,7 +51,9 @@ either transpiler alone gives the same result. The conflict is only about who re
 | STUWard | 1.3.15 | 1.3.15 |
 
 The failing line in Jotunn's transpiler is `AssetManager.cs:98` in both the 2.30.0 traces in the issues and the 2.30.1
-trace in `logs/`, so this is the same code, and the current Jotunn master still has no validity check on the match.
+trace in `logs/`, so this is the same code. Jotunn's `dev` branch (the default branch, at the v2.30.1 release commit when
+this was written) still has no validity check on the match. Line 98 is the start of the `return new CodeMatcher(...)`
+statement that contains the `SetInstruction` call.
 
 ## What the plugin does
 
@@ -182,6 +184,24 @@ IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): applying it threw ArgumentOut
 | `IL diagnostic: ... IsValid=True, ... Add calls in input=1` | Jotunn's `MatchForward` found the `Add` call in the IL it was handed (control run). |
 | `IL diagnostic: ... IsValid=False, ... Add calls in input=0` | Another transpiler ran first and removed the `Add` call, so Jotunn's match is invalid and `SetInstruction` throws. |
 | Neither line appears | You never loaded into a world (the check waits for `Player.m_localPlayer`), or the plugin isn't loading (check Jotunn is installed and the plugin is in `BepInEx/plugins`). |
+
+## Testing a fix (Jotunn with a validity check)
+
+A candidate fix for Jotunn lives on the branch
+[`fix/assetmanager-transpiler-isvalid-guard`](https://github.com/Hampus-Toft/Jotunn/tree/fix/assetmanager-transpiler-isvalid-guard)
+of a personal fork (based on the v2.30.1 release commit). It keeps the `MatchForward` as is, and if the match is invalid it
+logs a warning and returns the instructions unchanged instead of calling `SetInstruction`. The same two profiles as runs
+1 and 2 were repeated with a Jotunn 2.30.1 build from that branch (only `Jotunn.dll` replaced):
+
+| Run | Profile | Result | Log |
+| --- | --- | --- | --- |
+| 4 | patched Jotunn + STUWard 1.3.15 + plugin (`SimulateStuWardPatch=false`) | No crash. `AssetManager` and `PrefabManager` initialise, verdict `NOT REPRODUCED` (`GetSprite` returned `button(Clone)`). One `Could not find Dictionary.Add ...` warning on init, plus one more when the plugin's IL diagnostic replays the chain. | [`run4`](logs/run4-with-stuward-patched-jotunn.log) |
+| 5 | patched Jotunn + plugin, no STUWard (control) | Unchanged normal path: `IsValid=True, Pos=17, Add calls in input=1`, `AddSafe` applied, no warning. | [`run5`](logs/run5-control-patched-jotunn.log) |
+
+To repeat it: build Jotunn from that branch (`dotnet build JotunnLib/JotunnLib.csproj -c Release`, with `VALHEIM_INSTALL`
+set and `-p:SolutionDir=...\`; the final NuGet pack step may fail, `JotunnLib\bin\Release\net462\Jotunn.dll` is still
+produced), copy the DLL over the one in the profile, and run 1 and 2 above again. In run 4 the plugin's own
+`MatchForward(...) -> IsValid=False` line is still printed, because it runs its own matcher over the IL Jotunn receives.
 
 ## Game-free proof of the ordering
 

@@ -1,0 +1,81 @@
+# Run 4 (with the fix): real STUWard 1.3.15 + PATCHED Jotunn 2.30.1 + Asset Manager Crash (MRE) 1.1.0, SimulateStuWardPatch=false
+# Same profile as run 1, except Jotunn.dll is built from the fix branch: Hampus-Toft/Jotunn, branch
+# fix/assetmanager-transpiler-isvalid-guard, commit 02f9e09d (v2.30.1 + a validity check on the MatchForward result in
+# AssetManager.Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID). The log still says "Jotunn 2.30.1" because the
+# version was not changed; the new "Could not find Dictionary.Add ..." warning identifies the patched build.
+# Valheim 1.0.15, BepInExPack_Valheim 5.4.2350 (BepInEx 5.4.23.5).
+# Trimmed from BepInEx LogOutput.log. Lines marked [...] were omitted (localization loading, Steam identity, save-file
+# listing, world loading, player/character names). Everything else is verbatim.
+# The warning appears twice: once when Jotunn's AssetManager first patches the method, and once when the MRE's IL
+# diagnostic replays the transpiler chain.
+
+[Message:   BepInEx] BepInEx 5.4.23.5 - valheim (9/9/2026 7:10:01 PM)
+[Message:   BepInEx] User is running BepInExPack Valheim version 5.4.2350 from Thunderstore
+[Info   :   BepInEx] Running under Unity v6000.0.75.2503836
+[Info   :   BepInEx] CLR runtime version: 4.0.30319.42000
+[Info   :   BepInEx] Supports SRE: True
+[Info   :   BepInEx] System platform: Bits64, Windows
+[Message:   BepInEx] Preloader started
+[Info   :   BepInEx] Loaded 1 patcher method from [BepInEx.Preloader 5.4.23.5]
+[Info   :   BepInEx] 1 patcher plugin loaded
+[Info   :   BepInEx] Patching [UnityEngine.CoreModule] with [BepInEx.Chainloader]
+[Message:   BepInEx] Preloader finished
+[Message:   BepInEx] Chainloader ready
+[Message:   BepInEx] Chainloader started
+[Info   :   BepInEx] 3 plugins to load
+[Info   :   BepInEx] Loading [Jotunn 2.30.1]
+[Info   :Jotunn.Main] Initializing ModCompatibility
+[Info   :Jotunn.Main] Initializing SynchronizationManager
+[Info   :Jotunn.Main] Initializing NetworkManager
+[Info   :   BepInEx] Loading [Asset Manager Crash (MRE) 1.1.0]
+[Info   :Asset Manager Crash (MRE)] SimulateStuWardPatch=false: no simulated patch applied (relying on other installed mods).
+[Info   :   BepInEx] Loading [STUWard 1.3.15]
+[Info   :   STUWard] Loaded STUWard localizations: English=47, Korean=47
+
+[...]
+
+[Info   :   STUWard] Applied STUWard localization for language 'English' with 47 entries.
+[Info   :   STUWard] Applied item prefab policy: blocked_item_prefabs=5, pickup_whitelist=1, pickup_blacklist=0
+[Message:   BepInEx] Chainloader startup complete
+
+[...]
+
+[Info   : Unity Log] 09/19/2026 11:31:28: Valheim version: 1.0.15 (network version 40)
+
+[...]
+
+[Info   :   STUWard] Applied item prefab policy: blocked_item_prefabs=5, pickup_whitelist=1, pickup_blacklist=0
+[Info   : Unity Log] Registered 'sighsorry.STUWard ConfigSync' RPC - waiting for incoming connections
+[Info   :   STUWard] Registered STUWard prefab without Jotunn.
+
+[...]
+
+[Info   :Jotunn.Managers.NetworkManager] Registering 2 custom RPCs
+
+[...]
+
+[Info   : Unity Log] 09/19/2026 11:32:06: Spawned after 8.019993
+
+[...]
+
+[Info   : Unity Log] 09/19/2026 11:32:06: Skipping unloading unused assets
+
+[Info   :Jotunn.Main] Initializing GUIManager
+[Info   :Jotunn.Main] Initializing AssetManager
+[Warning:Jotunn.Managers.AssetManager+Patches] Could not find Dictionary.Add in AssetBundleLoader.GetAllAssetPathsMappedToAssetID, another mod may have already replaced it. Leaving the method unchanged.
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/rock2_mountain.prefab, new: Assets/world/Props/Rocks/rock2_mountain.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/stone/Stone1_huge.prefab, new: Assets/world/Props/DeepNorth/HotSpring/Stone1_huge.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/caverock_stairs.prefab, new: Assets/world/Props/Caverocks/caverock_stairs.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/caverock_curvedrock.prefab, new: Assets/world/Props/Caverocks/caverock_curvedrock.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/Caverocks/caverock_pillar.prefab, new: Assets/world/Props/DeepNorth/HotSpring/caverock_pillar.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/widestone.prefab, new: Assets/world/Props/Rocks/widestone.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/DeepNorth/HotSpring/caverock_floorsmall.prefab, new: Assets/world/Props/Caverocks/caverock_floorsmall.prefab, using old path
+[Warning:Jotunn.Managers.AssetManager] Ambiguous asset name for path. old: Assets/world/Props/Rocks/highstone.prefab, new: Assets/world/Props/DeepNorth/HotSpring/highstone.prefab, using old path
+[Info   :Jotunn.Main] Initializing PrefabManager
+[Info   :Asset Manager Crash (MRE)] NOT REPRODUCED: GUIManager.GetSprite returned 'button(Clone)'; Jotunn's AssetManager initialised.
+[Info   :Asset Manager Crash (MRE)] Harmony transpilers currently registered on AssetBundleLoader.GetAllAssetPathsMappedToAssetID: sighsorry.STUWard [STUWard.WardUiResources+AssetPathsPatch.Transpiler] (priority 400), com.jotunn.jotunn [Jotunn.Managers.AssetManager+Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID] (priority 400)
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: vanilla AssetBundleLoader.GetAllAssetPathsMappedToAssetID has 30 instructions, 1 call(s) to System.Collections.Generic.Dictionary`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[SoftReferenceableAssets.AssetID, SoftReferenceableAssets, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]].Add.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 1/2 (sighsorry.STUWard): applied OK; 0 call(s) to Dictionary.Add remain; callees introduced so far: STUWard.WardUiResources+AssetPathsPatch.AddPath.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): Jotunn's MatchForward(Calls Dictionary.Add) over its input IL -> IsValid=False, Pos=30, Length=30, Add calls in input=0.
+[Warning:Jotunn.Managers.AssetManager+Patches] Could not find Dictionary.Add in AssetBundleLoader.GetAllAssetPathsMappedToAssetID, another mod may have already replaced it. Leaving the method unchanged.
+[Info   :Asset Manager Crash (MRE)] IL diagnostic: transpiler 2/2 (com.jotunn.jotunn): applied OK; 0 call(s) to Dictionary.Add remain; callees introduced so far: STUWard.WardUiResources+AssetPathsPatch.AddPath.
