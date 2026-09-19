@@ -1,5 +1,5 @@
 # Run 4 (with the fix): real STUWard 1.3.15 + PATCHED Jotunn 2.30.1 + Asset Manager Crash (MRE) 1.1.0, SimulateStuWardPatch=false
-# Same profile as run 1, except Jotunn.dll is built from the fix branch: Hampus-Toft/Jotunn, branch
+# Same profile as run 1, except Jotunn.dll, Jotunn.pdb and Jotunn.dll.mdb are from a build of the fix branch: Hampus-Toft/Jotunn, branch
 # fix/assetmanager-transpiler-isvalid-guard, commit 02f9e09d (v2.30.1 + a validity check on the MatchForward result in
 # AssetManager.Patches.AssetBundleLoader_GetAllAssetPathsMappedToAssetID). The log still says "Jotunn 2.30.1" because the
 # version was not changed; the new "Could not find Dictionary.Add ..." warning identifies the patched build.

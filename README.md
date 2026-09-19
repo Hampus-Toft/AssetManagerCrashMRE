@@ -191,7 +191,8 @@ A candidate fix for Jotunn lives on the branch
 [`fix/assetmanager-transpiler-isvalid-guard`](https://github.com/Hampus-Toft/Jotunn/tree/fix/assetmanager-transpiler-isvalid-guard)
 of a personal fork (based on the v2.30.1 release commit). It keeps the `MatchForward` as is, and if the match is invalid it
 logs a warning and returns the instructions unchanged instead of calling `SetInstruction`. The same two profiles as runs
-1 and 2 were repeated with a Jotunn 2.30.1 build from that branch (only `Jotunn.dll` replaced):
+1 and 2 were repeated with a Jotunn 2.30.1 build from that branch (`Jotunn.dll`, `Jotunn.pdb` and `Jotunn.dll.mdb` from the
+build replaced the ones in the profile; nothing else changed):
 
 | Run | Profile | Result | Log |
 | --- | --- | --- | --- |
@@ -200,7 +201,8 @@ logs a warning and returns the instructions unchanged instead of calling `SetIns
 
 To repeat it: build Jotunn from that branch (`dotnet build JotunnLib/JotunnLib.csproj -c Release`, with `VALHEIM_INSTALL`
 set and `-p:SolutionDir=...\`; the final NuGet pack step may fail, `JotunnLib\bin\Release\net462\Jotunn.dll` is still
-produced), copy the DLL over the one in the profile, and run 1 and 2 above again. In run 4 the plugin's own
+produced), copy `Jotunn.dll`, `Jotunn.pdb` and `Jotunn.dll.mdb` from that folder over the ones in the profile's
+`plugins\ValheimModding-Jotunn` folder, and run 1 and 2 above again. In run 4 the plugin's own
 `MatchForward(...) -> IsValid=False` line is still printed, because it runs its own matcher over the IL Jotunn receives.
 
 ## Game-free proof of the ordering
